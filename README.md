@@ -1,6 +1,8 @@
 clj-swingrepl
 =============
 
+![](http://people.rit.edu/~awd4182/cljrepl.png)
+
 Swing Clojure REPL that uses BeanShell's JConsole component.
 
 Build
