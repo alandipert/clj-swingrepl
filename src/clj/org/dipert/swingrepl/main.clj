@@ -30,7 +30,7 @@
   ([] (make-repl-jframe {}))
   ([optmap]
      (let [jframe (make-jframe (merge default-opts optmap))]
-       (javax.swing.SwingUtilities/invokeLater
+       (javax.swing.SwingUtilities/invokeAndWait
 	#(let [console (bsh.util.JConsole.)]
 	   (doto (.getContentPane jframe)
 	     (.setLayout (java.awt.BorderLayout.))
