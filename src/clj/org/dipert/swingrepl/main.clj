@@ -36,7 +36,8 @@
 	     (.pack)
 	     (.setSize width height))
 	   (binding [*out* (java.io.OutputStreamWriter. (.getOut console))
-		     *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console))]
+		     *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console))
+              *err* (.getOut console)]
 	     (.start (Thread. (bound-fn [] (clojure.main/main)))))))))
 
 (defn -main
