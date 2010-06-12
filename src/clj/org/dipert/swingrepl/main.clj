@@ -10,7 +10,7 @@
      (apply str (interpose \. (map *clojure-version* [:major :minor :incremental]))))
 
 (def ^{:doc "Default REPL display options"
-       :private true}
+       :private false}
      default-opts
      {:width 600
       :height 400
@@ -37,7 +37,7 @@
 	     (.setSize width height))
 	   (binding [*out* (java.io.OutputStreamWriter. (.getOut console))
 		     *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console))]
-	     (.start (Thread. (bound-fn [] (clojure.main/repl)))))))))
+	     (.start (Thread. (bound-fn [] (clojure.main/main)))))))))
 
 (defn -main
   [& args]
