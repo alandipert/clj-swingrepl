@@ -75,7 +75,8 @@
   This will pop up the debugging REPL, you should be able to access the var 'a'
   from the REPL.
   "
-  [optmap]
+  ([] `(make-dbg-repl-jframe {}))
+  ([optmap]
   `(let [opts# (merge default-opts ~optmap)
          jframe# (doto (JFrame. (:title opts#))
                    (.setSize (:width opts#) (:height opts#))
@@ -95,7 +96,7 @@
          (.start (Thread. (bound-fn []
                                     (clojure.main/repl
                                       :prompt #(print "dr => ")
-                                      :eval (partial eval-with-locals (local-bindings))))))))))
+                                      :eval (partial eval-with-locals (local-bindings)))))))))))
 
 
 (defn -main
