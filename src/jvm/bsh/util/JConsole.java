@@ -160,7 +160,6 @@ public class JConsole extends JScrollPane
 			PipedOutputStream pout = new PipedOutputStream();
 			try {
 				out = new PrintStream( pout, false, "UTF-8");	
-				print("Really?", Color.red);
 			} catch( UnsupportedEncodingException uee ) {
 				throw new InternalError("missing required encoding: UTF-8");
 			}
