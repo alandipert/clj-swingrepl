@@ -1,7 +1,7 @@
 (ns org.dipert.swingrepl.main
   "Swing Clojure REPL using BeanShell's JConsole"
   (:require clojure.main)
-  (:import (javax.swing JFrame))
+  (:import (javax.swing JFrame) (bsh.util JConsole))
   (:gen-class))
 
 (def ^{:doc "Formatted Clojure version string"
@@ -35,9 +35,9 @@
 	   (doto jframe
 	     (.pack)
 	     (.setSize width height))
-	   (binding [*out* (java.io.OutputStreamWriter. (.getOut console))
-		     *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console))
-              *err* (.getOut console)]
+	   (binding [*out* (java.io.OutputStreamWriter. (.getOut console) "UTF-8")
+		     			 *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console))
+               *err* (.getOut console)]
 	     (.start (Thread. (bound-fn [] (clojure.main/main)))))))))
 
 
@@ -90,7 +90,7 @@
        (doto jframe#
          (.pack)
          (.setSize (:width opts#) (:height opts#)))
-       (binding [*out* (java.io.OutputStreamWriter. (.getOut console#))
+       (binding [*out* (java.io.OutputStreamWriter. (.getOut console#) "UTF-8")
                  *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console#))
                  *err* (.getOut console#)]
          (.start (Thread. (bound-fn []

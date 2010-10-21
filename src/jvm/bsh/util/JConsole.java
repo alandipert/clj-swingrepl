@@ -74,7 +74,15 @@ public class JConsole extends JScrollPane
 	private	PrintStream out;
 
 	public InputStream getInputStream() { return in; }
-	public Reader getIn() { return new InputStreamReader(in); }
+	public Reader getIn() {
+		InputStreamReader inStr = null;
+		try {
+			inStr = new InputStreamReader(in, "UTF-8");	
+		} catch( UnsupportedEncodingException uee ) {
+			throw new InternalError("missing required encoding: UTF-8");
+		}
+		return inStr;
+	}
 	public PrintStream getOut() { return out;	}
 	public PrintStream getErr() { return out;	}
 
@@ -150,7 +158,12 @@ public class JConsole extends JScrollPane
 		inPipe = cin;
 		if ( inPipe == null ) {
 			PipedOutputStream pout = new PipedOutputStream();
-			out = new PrintStream( pout );
+			try {
+				out = new PrintStream( pout, false, "UTF-8");	
+				print("Really?", Color.red);
+			} catch( UnsupportedEncodingException uee ) {
+				throw new InternalError("missing required encoding: UTF-8");
+			}
 			try {
 				inPipe = new BlockingPipedInputStream(pout);
 			} catch ( IOException e ) { print("Console internal error: "+e); }

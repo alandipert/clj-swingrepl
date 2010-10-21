@@ -10,7 +10,7 @@ Build
 
 * Install [Leiningen](http://github.com/technomancy/leiningen)
 * `lein deps`
-* `lein compile-java`
+* `lein javac`
 
 Run
 ---
