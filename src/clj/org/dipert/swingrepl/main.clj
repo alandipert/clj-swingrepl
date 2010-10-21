@@ -35,7 +35,7 @@
 	   (doto jframe
 	     (.pack)
 	     (.setSize width height))
-	   (binding [*out* (java.io.OutputStreamWriter. (.getOut console) "UTF-8")
+	   (binding [*out* (.getOut console)
 		     			 *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console))
                *err* (.getOut console)]
 	     (.start (Thread. (bound-fn [] (clojure.main/main)))))))))
@@ -90,7 +90,7 @@
        (doto jframe#
          (.pack)
          (.setSize (:width opts#) (:height opts#)))
-       (binding [*out* (java.io.OutputStreamWriter. (.getOut console#) "UTF-8")
+       (binding [*out* (.getOut console#)
                  *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console#))
                  *err* (.getOut console#)]
          (.start (Thread. (bound-fn []
