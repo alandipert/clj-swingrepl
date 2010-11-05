@@ -10,4 +10,5 @@
                      [lein-clojars "0.5.0-SNAPSHOT"]
                      [swank-clojure "1.2.1"]]
   :repositories {"clojure-releases" "http://build.clojure.org/releases"}
+  :hooks [leiningen.hooks.javac]
   :main org.dipert.swingrepl.main)
