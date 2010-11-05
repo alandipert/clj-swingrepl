@@ -22,7 +22,6 @@ To run, use something like `java -jar swingrepl-standalone.jar`
 Todo
 ----
 
-* Drop into `user` namespace on startup by default
 * Completions for things available in the current namespace: JConsole has its own completions mechanism that might be hooked into
 * Bracket, parentheses, quote completion/matching/highlighting
 * Better as-library behavior: provide configurable automatic imports
