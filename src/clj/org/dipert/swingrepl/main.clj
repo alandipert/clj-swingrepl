@@ -1,7 +1,8 @@
 (ns org.dipert.swingrepl.main
   "Swing Clojure REPL using BeanShell's JConsole"
   (:require clojure.main)
-  (:import (javax.swing JFrame) (bsh.util JConsole))
+  (:import (javax.swing JFrame)
+           (bsh.util JConsole))
   (:gen-class))
 
 (def ^{:doc "Formatted Clojure version string"
