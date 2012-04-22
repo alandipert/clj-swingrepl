@@ -191,11 +191,9 @@ public class JConsole extends JScrollPane
 		switch (e.getKeyCode()) {
 			case (KeyEvent.VK_ENTER):
 				if (e.getID() == KeyEvent.KEY_PRESSED) {
-					if (gotUp) {
-						enter();
-						resetCommandStart();
-						text.setCaretPosition(cmdStart);
-					}
+					enter();
+					resetCommandStart();
+					text.setCaretPosition(cmdStart);
 				}
 				e.consume();
 				text.repaint();
