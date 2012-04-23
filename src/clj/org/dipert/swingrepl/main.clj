@@ -36,6 +36,7 @@
 	   (doto jframe
 	     (.pack)
 	     (.setSize width height))
+	   (.requestFocus console)
 	   (binding [*out* (.getOut console)
 		     			 *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console))
                *err* (.getOut console)]
@@ -91,6 +92,7 @@
        (doto jframe#
          (.pack)
          (.setSize (:width opts#) (:height opts#)))
+       (.requestFocus console#)
        (binding [*out* (.getOut console#)
                  *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console#))
                  *err* (.getOut console#)]
