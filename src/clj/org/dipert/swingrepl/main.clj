@@ -1,6 +1,6 @@
 (ns org.dipert.swingrepl.main
   "Swing Clojure REPL using BeanShell's JConsole"
-  (:require clojure.main)
+  (:require clojure.main clojure.repl)
   (:import (javax.swing JFrame)
            (bsh.util JConsole))
   (:gen-class))
@@ -22,29 +22,35 @@
   (set! *print-level* 15)
   (set! *print-length* 103))
 
+(defn make-repl-thread [console & repl-args]
+  (binding [*out* (.getOut console)
+            *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console))
+            *err* (.getOut console)]
+    (Thread. (bound-fn []
+               (apply clojure.main/repl repl-args)))))
+
 (defn make-repl-jframe
   "Displays a JFrame with JConsole and attached REPL."
   ([] (make-repl-jframe {}))
   ([optmap]
      (let [options (merge default-opts optmap)
-	   {:keys [title width height on-close]} options
-	   jframe (doto (JFrame. title)
-		    (.setSize width height)
-		    (.setDefaultCloseOperation on-close)
-		    (.setLocationRelativeTo nil)
-		    (.setVisible true))]
-	(let [console (bsh.util.JConsole.)]
-	   (doto (.getContentPane jframe)
-	     (.setLayout (java.awt.BorderLayout.))
-	     (.add console))
-	   (doto jframe
-	     (.pack)
-	     (.setSize width height))
-	   (.requestFocus console)
-	   (binding [*out* (.getOut console)
-		     			 *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console))
-               *err* (.getOut console)]
-	     (.start (Thread. (bound-fn [] (clojure.main/repl :init set-defaults!)))))))))
+           {:keys [title width height on-close]} options
+           jframe (doto (JFrame. title)
+                    (.setSize width height)
+                    (.setDefaultCloseOperation on-close)
+                    (.setLocationRelativeTo nil)
+                    (.setVisible true))]
+       (let [console (bsh.util.JConsole.)]
+          (doto (.getContentPane jframe)
+            (.setLayout (java.awt.BorderLayout.))
+            (.add console))
+          (doto jframe
+            (.pack)
+            (.setSize width height))
+          (.requestFocus console)
+          (let [thread (make-repl-thread console :init set-defaults!)]
+            (.setREPLThread console thread)
+            (.start thread))))))
 
 
 ;; Debug swing macro
@@ -97,13 +103,11 @@
          (.pack)
          (.setSize (:width opts#) (:height opts#)))
        (.requestFocus console#)
-       (binding [*out* (.getOut console#)
-                 *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console#))
-                 *err* (.getOut console#)]
-         (.start (Thread. (bound-fn []
-                                    (clojure.main/repl
+       (let [thread (make-repl-thread console
                                       :prompt #(print "dr => ")
-                                      :eval (partial eval-with-locals (local-bindings)))))))))))
+                                      :eval (partial eval-with-locals (local-bindings)))]
+         (.setREPLThread console thread)
+         (.start thread))))))
 
 
 (defn -main

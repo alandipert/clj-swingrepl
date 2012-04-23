@@ -67,6 +67,7 @@ public class JConsole extends JScrollPane
 	private final static String COPY = "Copy";
 	private final static String PASTE = "Paste";
 
+	private Thread replThread;
 	private Writer outPipe;
 	private Reader inPipe;
 	private Reader in;
@@ -166,6 +167,10 @@ public class JConsole extends JScrollPane
 
 
 		requestFocus();
+	}
+
+	public void setREPLThread(Thread replThread) {
+		this.replThread = replThread;
 	}
 
 	public void requestFocus() {
@@ -284,10 +289,13 @@ public class JConsole extends JScrollPane
 
 			// Control-C
 			case (KeyEvent.VK_C):
-				if (text.getSelectedText() == null) {
+				if (text.getSelectedText() == null) { // Ctrl-C also copies text
 					if (((e.getModifiers() & InputEvent.CTRL_MASK) > 0)
 						&& (e.getID() == KeyEvent.KEY_PRESSED)) {
-						append("^C");
+						//append("^C");
+						if(replThread != null) {
+							replThread.stop(new Error("User pressed Ctrl-C"));
+						}
 					}
 					e.consume();
 				}
