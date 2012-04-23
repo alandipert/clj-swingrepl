@@ -215,10 +215,14 @@ public class JConsole extends JScrollPane
 
 			case (KeyEvent.VK_LEFT):
 			case (KeyEvent.VK_BACK_SPACE):
-			case (KeyEvent.VK_DELETE):
 				if (text.getCaretPosition() <= cmdStart) {
-					// This doesn't work for backspace.
-					// See default case for workaround
+					// See also default: case for backspace workaround
+					e.consume();
+				}
+				break;
+
+			case (KeyEvent.VK_DELETE):
+				if (text.getCaretPosition() < cmdStart) {
 					e.consume();
 				}
 				break;
@@ -228,7 +232,11 @@ public class JConsole extends JScrollPane
 				break;
 
 			case (KeyEvent.VK_HOME):
-				text.setCaretPosition(cmdStart);
+				if ((e.getModifiers() & InputEvent.SHIFT_MASK) > 0) {
+					text.moveCaretPosition(cmdStart);
+				} else {
+					text.setCaretPosition(cmdStart);
+				}
 				e.consume();
 				break;
 
