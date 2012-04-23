@@ -248,6 +248,14 @@ public class JConsole extends JScrollPane
 				}
 				break;
 
+			case (KeyEvent.VK_D):      // "end of input"
+				if ((e.getModifiers() & InputEvent.CTRL_MASK) > 0) {
+					e.consume();
+					// TODO: dispatch a WINDOW_CLOSING instead
+					System.exit(0);
+				}
+				break;
+
 			case (KeyEvent.VK_ALT):
 			case (KeyEvent.VK_CAPS_LOCK):
 			case (KeyEvent.VK_CONTROL):
