@@ -18,6 +18,10 @@
       :title (str "Clojure " clj-version)
       :on-close JFrame/DISPOSE_ON_CLOSE})
 
+(defn set-defaults! []
+  (set! *print-level* 15)
+  (set! *print-length* 103))
+
 (defn make-repl-jframe
   "Displays a JFrame with JConsole and attached REPL."
   ([] (make-repl-jframe {}))
@@ -40,7 +44,7 @@
 	   (binding [*out* (.getOut console)
 		     			 *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console))
                *err* (.getOut console)]
-	     (.start (Thread. (bound-fn [] (clojure.main/main)))))))))
+	     (.start (Thread. (bound-fn [] (clojure.main/repl :init set-defaults!)))))))))
 
 
 ;; Debug swing macro
