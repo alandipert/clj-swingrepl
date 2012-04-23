@@ -38,8 +38,7 @@
            jframe (doto (JFrame. title)
                     (.setSize width height)
                     (.setDefaultCloseOperation on-close)
-                    (.setLocationRelativeTo nil)
-                    (.setVisible true))]
+                    (.setLocationRelativeTo nil))]
        (let [console (bsh.util.JConsole.)]
           (doto (.getContentPane jframe)
             (.setLayout (java.awt.BorderLayout.))
@@ -50,7 +49,8 @@
           (.requestFocus console)
           (let [thread (make-repl-thread console :init set-defaults!)]
             (.setREPLThread console thread)
-            (.start thread))))))
+            (.start thread)
+            (.setVisible jframe true))))))
 
 
 ;; Debug swing macro
@@ -93,8 +93,7 @@
          jframe# (doto (JFrame. (:title opts#))
                    (.setSize (:width opts#) (:height opts#))
                    (.setDefaultCloseOperation (:on-close opts#))
-                   (.setLocationRelativeTo nil)
-                   (.setVisible true))]
+                   (.setLocationRelativeTo nil))]
      (let [console# (bsh.util.JConsole.)]
        (doto (.getContentPane jframe#)
          (.setLayout (java.awt.BorderLayout.))
@@ -107,7 +106,8 @@
                                       :prompt #(print "dr => ")
                                       :eval (partial eval-with-locals (local-bindings)))]
          (.setREPLThread console thread)
-         (.start thread))))))
+         (.start thread)
+         (.setVisible jframe# true))))))
 
 
 (defn -main
