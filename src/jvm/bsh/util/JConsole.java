@@ -173,6 +173,11 @@ public class JConsole extends JScrollPane
 		this.replThread = replThread;
 	}
 
+	@SuppressWarnings("deprecation")
+	private void stopREPLThread() {
+		this.replThread.stop(new Error("User pressed Ctrl-C"));
+	}
+
 	public void requestFocus() {
 		super.requestFocus();
 		text.requestFocus();
@@ -294,7 +299,7 @@ public class JConsole extends JScrollPane
 						&& (e.getID() == KeyEvent.KEY_PRESSED)) {
 						//append("^C");
 						if(replThread != null) {
-							replThread.stop(new Error("User pressed Ctrl-C"));
+							stopREPLThread();
 						}
 					}
 					e.consume();
