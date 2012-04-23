@@ -224,17 +224,32 @@ public class JConsole extends JScrollPane
 				break;
 
 			case (KeyEvent.VK_LEFT):
-			case (KeyEvent.VK_BACK_SPACE):
 				if (text.getCaretPosition() <= cmdStart) {
-					// See also default: case for backspace workaround
 					e.consume();
 				}
+				break;
+
+			case (KeyEvent.VK_BACK_SPACE):
+				if (text.getSelectedText() == null) {
+					if(text.getCaretPosition() <= cmdStart) {
+						e.consume();
+					}
+				} else {
+					if(text.getCaretPosition() < cmdStart) {
+						e.consume();
+					}
+					// TODO: prevent deletion when the caret is at
+					// the end of the user=> line
+				}
+				// See also default: case for backspace workaround
 				break;
 
 			case (KeyEvent.VK_DELETE):
 				if (text.getCaretPosition() < cmdStart) {
 					e.consume();
 				}
+				// TODO: prevent deletion when the caret is at
+				// the end of the user=> line
 				break;
 
 			case (KeyEvent.VK_RIGHT):
