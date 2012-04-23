@@ -13,7 +13,7 @@
 (def ^{:doc "Default REPL display options"
        :private false}
      default-opts
-     {:width 600
+     {:width 972
       :height 400
       :title (str "Clojure " clj-version)
       :on-close JFrame/DISPOSE_ON_CLOSE})
