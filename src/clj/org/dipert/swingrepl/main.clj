@@ -22,7 +22,7 @@
   (set! *print-level* 15)
   (set! *print-length* 103))
 
-(defn make-repl-thread [console & repl-args]
+(defn- make-repl-thread [console & repl-args]
   (binding [*out* (.getOut console)
             *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console))
             *err* (.getOut console)]
