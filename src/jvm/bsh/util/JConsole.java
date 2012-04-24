@@ -45,6 +45,7 @@ import java.util.Vector;
 import java.awt.Cursor;
 import javax.swing.text.*;
 import javax.swing.*;
+import clojure.lang.IFn;
 
 // Things that are not in the core packages
 
@@ -67,7 +68,7 @@ public class JConsole extends JScrollPane
 	private final static String COPY = "Copy";
 	private final static String PASTE = "Paste";
 
-	private Thread replThread;
+	private IFn interruptFunction;
 	private Writer outPipe;
 	private Reader inPipe;
 	private Reader in;
@@ -169,13 +170,8 @@ public class JConsole extends JScrollPane
 		requestFocus();
 	}
 
-	public void setREPLThread(Thread replThread) {
-		this.replThread = replThread;
-	}
-
-	@SuppressWarnings("deprecation")
-	private void stopREPLThread() {
-		this.replThread.stop(new Error("User pressed Ctrl-C"));
+	public void setInterruptFunction(IFn interruptFunction) {
+		this.interruptFunction = interruptFunction;
 	}
 
 	public void requestFocus() {
@@ -313,8 +309,8 @@ public class JConsole extends JScrollPane
 					if (((e.getModifiers() & InputEvent.CTRL_MASK) > 0)
 						&& (e.getID() == KeyEvent.KEY_PRESSED)) {
 						//append("^C");
-						if(replThread != null) {
-							stopREPLThread();
+						if(interruptFunction != null) {
+							interruptFunction.invoke("User pressed Ctrl-C");
 						}
 					}
 					e.consume();

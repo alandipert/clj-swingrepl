@@ -47,8 +47,9 @@
             (.pack)
             (.setSize width height))
           (.requestFocus console)
-          (let [thread (make-repl-thread console :init set-defaults!)]
-            (.setREPLThread console thread)
+          (let [thread (make-repl-thread console :init set-defaults!)
+                stopper (clojure.repl/thread-stopper thread)]
+            (.setInterruptFunction console (fn [reason] (stopper reason)))
             (.start thread)
             (.setVisible jframe true))))))
 
@@ -104,8 +105,9 @@
        (.requestFocus console#)
        (let [thread (make-repl-thread console
                                       :prompt #(print "dr => ")
-                                      :eval (partial eval-with-locals (local-bindings)))]
-         (.setREPLThread console thread)
+                                      :eval (partial eval-with-locals (local-bindings)))
+             stopper (clojure.repl/thread-stopper thread)]
+         (.setInterruptFunction console (fn [reason] (stopper reason)))
          (.start thread)
          (.setVisible jframe# true))))))
 
