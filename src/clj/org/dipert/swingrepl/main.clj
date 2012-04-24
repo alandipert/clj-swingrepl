@@ -18,7 +18,7 @@
       :title (str "Clojure " clj-version)
       :on-close JFrame/DISPOSE_ON_CLOSE})
 
-(defn set-defaults! []
+(defn- set-defaults! []
   (set! *print-level* 15)
   (set! *print-length* 103))
 
