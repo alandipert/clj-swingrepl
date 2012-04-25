@@ -6,10 +6,7 @@
            (bsh.util JConsole))
   (:gen-class))
 
-;; Debug swing macro
-;
-; Can't take credit for the debug macro, came from here:
-; http://gist.github.com/252421
+; local-bindings and eval-with-locals are from http://gist.github.com/252421
 ; Inspired by George Jahad's version: http://georgejahad.com/clojure/debug-repl.html
 (defmacro local-bindings
   "Produces a map of the names of local bindings to their values."
@@ -26,7 +23,6 @@
     (eval
       `(let ~(vec (mapcat #(list % `(*locals* '~%)) (keys locals)))
          ~form))))
-
 
 (def ^{:doc "Formatted Clojure version string"
        :private true}
