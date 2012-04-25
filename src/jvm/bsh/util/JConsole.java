@@ -69,6 +69,7 @@ public class JConsole extends JScrollPane
 	private final static String PASTE = "Paste";
 
 	private IFn interruptFunction;
+	private IFn eofFunction;
 	private Writer outPipe;
 	private Reader inPipe;
 	private Reader in;
@@ -174,6 +175,10 @@ public class JConsole extends JScrollPane
 		this.interruptFunction = interruptFunction;
 	}
 
+	public void setEOFFunction(IFn eofFunction) {
+		this.eofFunction = eofFunction;
+	}
+
 	public void requestFocus() {
 		super.requestFocus();
 		text.requestFocus();
@@ -272,8 +277,9 @@ public class JConsole extends JScrollPane
 			case (KeyEvent.VK_D):      // "end of input"
 				if ((e.getModifiers() & InputEvent.CTRL_MASK) > 0) {
 					e.consume();
-					// TODO: dispatch a WINDOW_CLOSING instead
-					System.exit(0);
+					if(this.eofFunction != null) {
+						this.eofFunction.invoke();
+					}
 				}
 				break;
 

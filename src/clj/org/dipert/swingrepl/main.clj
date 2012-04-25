@@ -2,6 +2,7 @@
   "Swing Clojure REPL using BeanShell's JConsole"
   (:require clojure.main clojure.repl)
   (:import (javax.swing JFrame)
+           (java.awt.event WindowEvent)
            (bsh.util JConsole))
   (:gen-class))
 
@@ -22,12 +23,15 @@
   (set! *print-level* 15)
   (set! *print-length* 103))
 
-(defn make-repl-thread [console & repl-args]
+(defn ^:internal make-repl-thread [console & repl-args]
   (binding [*out* (.getOut console)
             *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console))
             *err* (.getOut console)]
     (Thread. (bound-fn []
                (apply clojure.main/repl repl-args)))))
+
+(defn ^:internal window-closing-dispatcher [window]
+  (fn [] (.dispatchEvent window (WindowEvent. window WindowEvent/WINDOW_CLOSING))))
 
 (defn make-repl-jframe
   "Displays a JFrame with JConsole and attached REPL."
@@ -50,6 +54,7 @@
           (let [thread (make-repl-thread console :init set-defaults!)
                 stopper (clojure.repl/thread-stopper thread)]
             (.setInterruptFunction console (fn [reason] (stopper reason)))
+            (.setEOFFunction console (window-closing-dispatcher jframe))
             (.start thread)
             (.setVisible jframe true))))))
 
@@ -108,6 +113,7 @@
                                       :eval (partial eval-with-locals (local-bindings)))
              stopper# (clojure.repl/thread-stopper thread#)]
          (.setInterruptFunction console# (fn [reason#] (stopper# reason#)))
+         (.setEOFFunction console# (window-closing-dispatcher jframe#))
          (.start thread#)
          (.setVisible jframe# true))))))
 
