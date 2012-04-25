@@ -6,59 +6,6 @@
            (bsh.util JConsole))
   (:gen-class))
 
-(def ^{:doc "Formatted Clojure version string"
-       :private true}
-     clj-version
-     (apply str (interpose \. (map *clojure-version* [:major :minor :incremental]))))
-
-(def ^{:doc "Default REPL display options"
-       :private false}
-     default-opts
-     {:width 972
-      :height 400
-      :title (str "Clojure " clj-version)
-      :on-close JFrame/DISPOSE_ON_CLOSE})
-
-(defn- set-defaults! []
-  (set! *print-level* 15)
-  (set! *print-length* 103))
-
-(defn ^:internal make-repl-thread [console & repl-args]
-  (binding [*out* (.getOut console)
-            *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console))
-            *err* (.getOut console)]
-    (Thread. (bound-fn []
-               (apply clojure.main/repl repl-args)))))
-
-(defn ^:internal window-closing-dispatcher [window]
-  (fn [] (.dispatchEvent window (WindowEvent. window WindowEvent/WINDOW_CLOSING))))
-
-(defn make-repl-jframe
-  "Displays a JFrame with JConsole and attached REPL."
-  ([] (make-repl-jframe {}))
-  ([optmap]
-     (let [options (merge default-opts optmap)
-           {:keys [title width height on-close]} options
-           jframe (doto (JFrame. title)
-                    (.setSize width height)
-                    (.setDefaultCloseOperation on-close)
-                    (.setLocationRelativeTo nil))]
-       (let [console (bsh.util.JConsole.)]
-          (doto (.getContentPane jframe)
-            (.setLayout (java.awt.BorderLayout.))
-            (.add console))
-          (doto jframe
-            (.pack)
-            (.setSize width height))
-          (.requestFocus console)
-          (let [thread (make-repl-thread console :init set-defaults!)
-                stopper (clojure.repl/thread-stopper thread)]
-            (.setInterruptFunction console (fn [reason] (stopper reason)))
-            (.setEOFFunction console (window-closing-dispatcher jframe))
-            (.start thread)
-            (.setVisible jframe true))))))
-
-
 ;; Debug swing macro
 ;
 ; Can't take credit for the debug macro, came from here:
@@ -80,6 +27,69 @@
       `(let ~(vec (mapcat #(list % `(*locals* '~%)) (keys locals)))
          ~form))))
 
+
+(def ^{:doc "Formatted Clojure version string"
+       :private true}
+     clj-version
+     (apply str (interpose \. (map *clojure-version* [:major :minor :incremental]))))
+
+(defn- set-defaults! []
+  (set! *print-level* 15)
+  (set! *print-length* 103))
+
+(def ^{:doc "Default REPL options"
+       :private false}
+     default-opts
+     {:width 972
+      :height 400
+      :title (str "Clojure " clj-version " REPL")
+      :prompt #(print "user=> ")
+      :init set-defaults!
+      :eval eval
+      :on-close JFrame/DISPOSE_ON_CLOSE})
+
+(def ^{:doc "Default debug REPL options"
+       :private false}
+     default-dbg-opts
+     {:title (str "Clojure " clj-version " Debug REPL")
+      :prompt #(print "dr => ")
+      :eval (partial eval-with-locals (local-bindings))})
+
+(defn- make-repl-thread [console & repl-args]
+  (binding [*out* (.getOut console)
+            *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console))
+            *err* (.getOut console)]
+    (Thread. (bound-fn []
+               (apply clojure.main/repl repl-args)))))
+
+(defn- window-closing-dispatcher [window]
+  (fn [] (.dispatchEvent window (WindowEvent. window WindowEvent/WINDOW_CLOSING))))
+
+(defn make-repl-jframe
+  "Displays a JFrame with JConsole and attached REPL."
+  ([] (make-repl-jframe {}))
+  ([optmap]
+     (let [options (merge default-opts optmap)
+           {:keys [title width height on-close prompt init eval]} options
+           jframe (doto (JFrame. title)
+                    (.setSize width height)
+                    (.setDefaultCloseOperation on-close)
+                    (.setLocationRelativeTo nil))]
+       (let [console (bsh.util.JConsole.)]
+          (doto (.getContentPane jframe)
+            (.setLayout (java.awt.BorderLayout.))
+            (.add console))
+          (doto jframe
+            (.pack)
+            (.setSize width height))
+          (.requestFocus console)
+          (let [thread (make-repl-thread console :prompt prompt :init init :eval eval)
+                stopper (clojure.repl/thread-stopper thread)]
+            (.setInterruptFunction console (fn [reason] (stopper reason)))
+            (.setEOFFunction console (window-closing-dispatcher jframe))
+            (.start thread)
+            (.setVisible jframe true))))))
+
 (defmacro make-dbg-repl-jframe
   "Displays a JFrame with JConsole and attached REPL. The frame has the context
   from wherever it has been called, effectively creating a debugging REPL.
@@ -95,30 +105,9 @@
   "
   ([] `(make-dbg-repl-jframe {}))
   ([optmap]
-  `(let [opts# (merge default-opts ~optmap)
-         jframe# (doto (JFrame. (:title opts#))
-                   (.setSize (:width opts#) (:height opts#))
-                   (.setDefaultCloseOperation (:on-close opts#))
-                   (.setLocationRelativeTo nil))]
-     (let [console# (bsh.util.JConsole.)]
-       (doto (.getContentPane jframe#)
-         (.setLayout (java.awt.BorderLayout.))
-         (.add console#))
-       (doto jframe#
-         (.pack)
-         (.setSize (:width opts#) (:height opts#)))
-       (.requestFocus console#)
-       (let [thread# (make-repl-thread console#
-                                      :prompt #(print "dr => ")
-                                      :eval (partial eval-with-locals (local-bindings)))
-             stopper# (clojure.repl/thread-stopper thread#)]
-         (.setInterruptFunction console# (fn [reason#] (stopper# reason#)))
-         (.setEOFFunction console# (window-closing-dispatcher jframe#))
-         (.start thread#)
-         (.setVisible jframe# true))))))
-
+  `(let [locals# (local-bindings)]
+     (make-repl-jframe (merge default-opts default-dbg-opts ~optmap)))))
 
 (defn -main
   [& args]
   (make-repl-jframe {:on-close JFrame/EXIT_ON_CLOSE}))
-
