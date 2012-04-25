@@ -69,26 +69,26 @@
   "Displays a JFrame with JConsole and attached REPL."
   ([] (make-repl-jframe {}))
   ([optmap]
-     (let [options (merge default-opts optmap)
-           {:keys [title width height on-close prompt init eval]} options
-           jframe (doto (JFrame. title)
-                    (.setSize width height)
-                    (.setDefaultCloseOperation on-close)
-                    (.setLocationRelativeTo nil))]
-       (let [console (bsh.util.JConsole.)]
-          (doto (.getContentPane jframe)
-            (.setLayout (java.awt.BorderLayout.))
-            (.add console))
-          (doto jframe
-            (.pack)
-            (.setSize width height))
-          (.requestFocus console)
-          (let [thread (make-repl-thread console :prompt prompt :init init :eval eval)
-                stopper (clojure.repl/thread-stopper thread)]
-            (.setInterruptFunction console (fn [reason] (stopper reason)))
-            (.setEOFFunction console (window-closing-dispatcher jframe))
-            (.start thread)
-            (.setVisible jframe true))))))
+    (let [options (merge default-opts optmap)
+          {:keys [title width height on-close prompt init eval]} options
+          jframe (doto (JFrame. title)
+        (.setSize width height)
+        (.setDefaultCloseOperation on-close)
+        (.setLocationRelativeTo nil))]
+      (let [console (bsh.util.JConsole.)]
+        (doto (.getContentPane jframe)
+          (.setLayout (java.awt.BorderLayout.))
+          (.add console))
+        (doto jframe
+          (.pack)
+          (.setSize width height))
+        (.requestFocus console)
+        (let [thread  (make-repl-thread console :prompt prompt :init init :eval eval)
+              stopper (clojure.repl/thread-stopper thread)]
+          (.setInterruptFunction console (fn [reason] (stopper reason)))
+          (.setEOFFunction console (window-closing-dispatcher jframe))
+          (.start thread)
+          (.setVisible jframe true))))))
 
 (defmacro make-dbg-repl-jframe
   "Displays a JFrame with JConsole and attached REPL. The frame has the context
