@@ -235,7 +235,7 @@ public class JConsole extends JScrollPane
 						e.consume();
 					}
 					// TODO: prevent deletion when the caret is at
-					// the end of the user=> line
+					// the end of the user=> marker
 				}
 				// See also default: case for backspace workaround
 				break;
@@ -245,7 +245,7 @@ public class JConsole extends JScrollPane
 					e.consume();
 				}
 				// TODO: prevent deletion when the caret is at
-				// the end of the user=> line
+				// the end of the user=> marker
 				break;
 
 			case (KeyEvent.VK_RIGHT):
