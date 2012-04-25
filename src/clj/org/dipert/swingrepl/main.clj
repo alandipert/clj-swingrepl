@@ -105,10 +105,10 @@
   ([] `(make-dbg-repl-jframe {}))
   ([optmap]
    `(make-repl-jframe (merge
-     default-opts
-     default-dbg-opts
-     {:eval (partial eval-with-locals (local-bindings))}
-     ~optmap))))
+      default-opts
+      default-dbg-opts
+      {:eval (partial eval-with-locals (local-bindings))}
+      ~optmap))))
 
 (defn -main
   [& args]
