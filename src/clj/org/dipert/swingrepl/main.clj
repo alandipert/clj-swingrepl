@@ -6,24 +6,6 @@
            (bsh.util JConsole))
   (:gen-class))
 
-; local-bindings and eval-with-locals are from http://gist.github.com/252421
-; Inspired by George Jahad's version: http://georgejahad.com/clojure/debug-repl.html
-(defmacro local-bindings
-  "Produces a map of the names of local bindings to their values."
-  []
-  (let [symbols (map key @clojure.lang.Compiler/LOCAL_ENV)]
-    (zipmap (map (fn [sym] `(quote ~sym)) symbols) symbols)))
-
-(declare ^:dynamic *locals*)
-(defn eval-with-locals
-  "Evals a form with given locals. The locals should be a map of symbols to
-  values."
-  [locals form]
-  (binding [*locals* locals]
-    (eval
-      `(let ~(vec (mapcat #(list % `(*locals* '~%)) (keys locals)))
-         ~form))))
-
 (def ^{:doc "Formatted Clojure version string"
        :private true}
      clj-version
@@ -49,7 +31,7 @@
      default-dbg-opts
      {:title (str "Clojure " clj-version " Debug REPL")
       :prompt #(print "dr => ")
-      :eval (partial eval-with-locals (local-bindings))})
+      :eval (comment "See make-dbg-repl-jframe")})
 
 (defn- make-repl-thread [console & repl-args]
   (binding [*out* (.getOut console)
@@ -86,6 +68,24 @@
           (.start thread)
           (.setVisible jframe true))))))
 
+; local-bindings and eval-with-locals are from http://gist.github.com/252421
+; Inspired by George Jahad's version: http://georgejahad.com/clojure/debug-repl.html
+(defmacro local-bindings
+  "Produces a map of the names of local bindings to their values."
+  []
+  (let [symbols (map key @clojure.lang.Compiler/LOCAL_ENV)]
+    (zipmap (map (fn [sym] `(quote ~sym)) symbols) symbols)))
+
+(declare ^:dynamic *locals*)
+(defn eval-with-locals
+  "Evals a form with given locals. The locals should be a map of symbols to
+  values."
+  [locals form]
+  (binding [*locals* locals]
+    (eval
+      `(let ~(vec (mapcat #(list % `(*locals* '~%)) (keys locals)))
+         ~form))))
+
 (defmacro make-dbg-repl-jframe
   "Displays a JFrame with JConsole and attached REPL. The frame has the context
   from wherever it has been called, effectively creating a debugging REPL.
@@ -101,8 +101,11 @@
   "
   ([] `(make-dbg-repl-jframe {}))
   ([optmap]
-  `(let [locals# (local-bindings)]
-     (make-repl-jframe (merge default-opts default-dbg-opts ~optmap)))))
+   `(make-repl-jframe (merge
+     default-opts
+     default-dbg-opts
+     {:eval (partial eval-with-locals (local-bindings))}
+     ~optmap))))
 
 (defn -main
   [& args]
