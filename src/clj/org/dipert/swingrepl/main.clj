@@ -22,7 +22,7 @@
   (set! *print-level* 15)
   (set! *print-length* 103))
 
-(defn- make-repl-thread [console & repl-args]
+(defn make-repl-thread [console & repl-args]
   (binding [*out* (.getOut console)
             *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console))
             *err* (.getOut console)]
@@ -103,12 +103,12 @@
          (.pack)
          (.setSize (:width opts#) (:height opts#)))
        (.requestFocus console#)
-       (let [thread (make-repl-thread console
+       (let [thread# (make-repl-thread console#
                                       :prompt #(print "dr => ")
                                       :eval (partial eval-with-locals (local-bindings)))
-             stopper (clojure.repl/thread-stopper thread)]
-         (.setInterruptFunction console (fn [reason] (stopper reason)))
-         (.start thread)
+             stopper# (clojure.repl/thread-stopper thread#)]
+         (.setInterruptFunction console# (fn [reason#] (stopper# reason#)))
+         (.start thread#)
          (.setVisible jframe# true))))))
 
 
