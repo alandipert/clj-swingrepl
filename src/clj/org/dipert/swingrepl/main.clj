@@ -97,8 +97,7 @@
     (foo 3)
 
   This will pop up the debugging REPL, you should be able to access the var 'a'
-  from the REPL.
-  "
+  from the REPL."
   ([] `(make-dbg-repl-jframe {}))
   ([optmap]
    `(make-repl-jframe (merge
