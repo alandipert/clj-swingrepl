@@ -126,9 +126,7 @@ public class JConsole extends JScrollPane
 			}
 		};
 
-		Font font = new Font("Monospaced", Font.PLAIN, 14);
 		text.setText("");
-		text.setFont(font);
 		text.setMargin(new Insets(7, 5, 7, 5));
 		text.addKeyListener(this);
 		setViewportView(text);
@@ -715,6 +713,7 @@ public class JConsole extends JScrollPane
 
 		if (text != null) {
 			text.setFont(font);
+			text.repaint();
 		}
 	}
 

@@ -3,6 +3,7 @@
   (:require clojure.main clojure.repl)
   (:import (javax.swing JFrame)
            (java.awt.event WindowEvent)
+           (java.awt Font)
            (bsh.util JConsole))
   (:gen-class))
 
@@ -20,6 +21,7 @@
      default-opts
      {:width 972
       :height 400
+      :font (Font. "Monospaced" Font/PLAIN 14)
       :title (str "Clojure " clj-version " REPL")
       :prompt #(print "user=> ")
       :init set-safe-printing!
@@ -48,7 +50,7 @@
   ([] (make-repl-jframe {}))
   ([optmap]
     (let [options (merge default-opts optmap)
-          {:keys [title width height on-close prompt init eval]} options
+          {:keys [title width height font on-close prompt init eval]} options
           jframe (doto (JFrame. title)
         (.setSize width height)
         (.setDefaultCloseOperation on-close)
@@ -63,8 +65,10 @@
         (.requestFocus console)
         (let [thread  (make-repl-thread console :prompt prompt :init init :eval eval)
               stopper (clojure.repl/thread-stopper thread)]
-          (.setInterruptFunction console (fn [reason] (stopper reason)))
-          (.setEOFFunction console (window-closing-dispatcher jframe))
+          (doto console
+            (.setFont font)
+            (.setInterruptFunction (fn [reason] (stopper reason)))
+            (.setEOFFunction (window-closing-dispatcher jframe)))
           (.start thread)
           (.setVisible jframe true))))))
 
