@@ -63,7 +63,7 @@
                (apply clojure.main/repl repl-args)))))
 
 (defn- window-closing-dispatcher [window]
-  (fn [] (.dispatchEvent window (WindowEvent. window WindowEvent/WINDOW_CLOSING))))
+  #(.dispatchEvent window (WindowEvent. window WindowEvent/WINDOW_CLOSING)))
 
 (defn make-repl-jframe
   "Displays a JFrame with JConsole and attached REPL."
