@@ -103,10 +103,14 @@ public class JConsole extends JScrollPane
 	private boolean gotUp = true;
 
 	public JConsole() {
-		this(null, null);
+		this(null, null, new Font("Monospaced", Font.PLAIN, 14));
 	}
 
-	public JConsole(Reader cin, Writer cout) {
+	public JConsole(Font font) {
+		this(null, null, font);
+	}
+
+	public JConsole(Reader cin, Writer cout, Font font) {
 		super();
 
 		// Special TextPane which catches for cut and paste, both L&F keys and
@@ -126,6 +130,7 @@ public class JConsole extends JScrollPane
 			}
 		};
 
+		text.setFont(font);
 		text.setText("");
 		text.setMargin(new Insets(7, 5, 7, 5));
 		text.addKeyListener(this);

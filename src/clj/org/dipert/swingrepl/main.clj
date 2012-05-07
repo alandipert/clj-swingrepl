@@ -55,7 +55,7 @@
         (.setSize width height)
         (.setDefaultCloseOperation on-close)
         (.setLocationRelativeTo nil))]
-      (let [console (bsh.util.JConsole.)]
+      (let [console (bsh.util.JConsole. font)]
         (doto (.getContentPane jframe)
           (.setLayout (java.awt.BorderLayout.))
           (.add console))
@@ -66,7 +66,6 @@
         (let [thread  (make-repl-thread console :prompt prompt :init init :eval eval)
               stopper (clojure.repl/thread-stopper thread)]
           (doto console
-            (.setFont font)
             (.setInterruptFunction (fn [reason] (stopper reason)))
             (.setEOFFunction (window-closing-dispatcher jframe)))
           (.start thread)
