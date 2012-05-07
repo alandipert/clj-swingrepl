@@ -713,7 +713,6 @@ public class JConsole extends JScrollPane
 
 		if (text != null) {
 			text.setFont(font);
-			text.repaint();
 		}
 	}
 
