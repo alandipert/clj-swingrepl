@@ -1,7 +1,9 @@
 (ns org.dipert.swingrepl.main
   "Swing Clojure REPL using BeanShell's JConsole"
-  (:require clojure.main)
+  (:require clojure.main clojure.repl)
   (:import (javax.swing JFrame)
+           (java.awt.event WindowEvent)
+           (java.awt Font)
            (bsh.util JConsole))
   (:gen-class))
 
@@ -10,42 +12,66 @@
      clj-version
      (apply str (interpose \. (map *clojure-version* [:major :minor :incremental]))))
 
-(def ^{:doc "Default REPL display options"
+(defn- set-safe-printing! []
+  (set! *print-level* 15)
+  (set! *print-length* 103))
+
+(def ^{:doc "Default REPL options"
        :private false}
      default-opts
-     {:width 600
+     {:width 972
       :height 400
-      :title (str "Clojure " clj-version)
+      :font (Font. "Monospaced" Font/PLAIN 14)
+      :title (str "Clojure " clj-version " REPL")
+      :prompt #(print "user=> ")
+      :init set-safe-printing!
+      :eval eval
       :on-close JFrame/DISPOSE_ON_CLOSE})
+
+(def ^{:doc "Default debug REPL options"
+       :private false}
+     default-dbg-opts
+     {:title (str "Clojure " clj-version " Debug REPL")
+      :prompt #(print "dr => ")
+      :eval (comment "See make-dbg-repl-jframe")})
+
+(defn- make-repl-thread [console & repl-args]
+  (binding [*out* (.getOut console)
+            *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console))
+            *err* (.getOut console)]
+    (Thread. (bound-fn []
+               (apply clojure.main/repl repl-args)))))
+
+(defn- window-closing-dispatcher [window]
+  #(.dispatchEvent window (WindowEvent. window WindowEvent/WINDOW_CLOSING)))
 
 (defn make-repl-jframe
   "Displays a JFrame with JConsole and attached REPL."
   ([] (make-repl-jframe {}))
   ([optmap]
-     (let [options (merge default-opts optmap)
-	   {:keys [title width height on-close]} options
-	   jframe (doto (JFrame. title)
-		    (.setSize width height)
-		    (.setDefaultCloseOperation on-close)
-		    (.setLocationRelativeTo nil)
-		    (.setVisible true))]
-	(let [console (bsh.util.JConsole.)]
-	   (doto (.getContentPane jframe)
-	     (.setLayout (java.awt.BorderLayout.))
-	     (.add console))
-	   (doto jframe
-	     (.pack)
-	     (.setSize width height))
-	   (binding [*out* (.getOut console)
-		     			 *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console))
-               *err* (.getOut console)]
-	     (.start (Thread. (bound-fn [] (clojure.main/main)))))))))
+    (let [options (merge default-opts optmap)
+          {:keys [title width height font on-close prompt init eval]} options
+          jframe (doto (JFrame. title)
+        (.setSize width height)
+        (.setDefaultCloseOperation on-close)
+        (.setLocationRelativeTo nil))]
+      (let [console (bsh.util.JConsole. font)]
+        (doto (.getContentPane jframe)
+          (.setLayout (java.awt.BorderLayout.))
+          (.add console))
+        (doto jframe
+          (.pack)
+          (.setSize width height))
+        (.requestFocus console)
+        (let [thread  (make-repl-thread console :prompt prompt :init init :eval eval)
+              stopper (clojure.repl/thread-stopper thread)]
+          (doto console
+            (.setInterruptFunction (fn [reason] (stopper reason)))
+            (.setEOFFunction (window-closing-dispatcher jframe)))
+          (.start thread)
+          (.setVisible jframe true))))))
 
-
-;; Debug swing macro
-;
-; Can't take credit for the debug macro, came from here:
-; http://gist.github.com/252421
+; local-bindings and eval-with-locals are from http://gist.github.com/252421
 ; Inspired by George Jahad's version: http://georgejahad.com/clojure/debug-repl.html
 (defmacro local-bindings
   "Produces a map of the names of local bindings to their values."
@@ -53,7 +79,7 @@
   (let [symbols (map key @clojure.lang.Compiler/LOCAL_ENV)]
     (zipmap (map (fn [sym] `(quote ~sym)) symbols) symbols)))
 
-(declare *locals*)
+(declare ^:dynamic *locals*)
 (defn eval-with-locals
   "Evals a form with given locals. The locals should be a map of symbols to
   values."
@@ -74,33 +100,15 @@
     (foo 3)
 
   This will pop up the debugging REPL, you should be able to access the var 'a'
-  from the REPL.
-  "
+  from the REPL."
   ([] `(make-dbg-repl-jframe {}))
   ([optmap]
-  `(let [opts# (merge default-opts ~optmap)
-         jframe# (doto (JFrame. (:title opts#))
-                   (.setSize (:width opts#) (:height opts#))
-                   (.setDefaultCloseOperation (:on-close opts#))
-                   (.setLocationRelativeTo nil)
-                   (.setVisible true))]
-     (let [console# (bsh.util.JConsole.)]
-       (doto (.getContentPane jframe#)
-         (.setLayout (java.awt.BorderLayout.))
-         (.add console#))
-       (doto jframe#
-         (.pack)
-         (.setSize (:width opts#) (:height opts#)))
-       (binding [*out* (.getOut console#)
-                 *in*  (clojure.lang.LineNumberingPushbackReader. (.getIn console#))
-                 *err* (.getOut console#)]
-         (.start (Thread. (bound-fn []
-                                    (clojure.main/repl
-                                      :prompt #(print "dr => ")
-                                      :eval (partial eval-with-locals (local-bindings)))))))))))
-
+   `(make-repl-jframe (merge
+      default-opts
+      default-dbg-opts
+      {:eval (partial eval-with-locals (local-bindings))}
+      ~optmap))))
 
 (defn -main
   [& args]
   (make-repl-jframe {:on-close JFrame/EXIT_ON_CLOSE}))
-
