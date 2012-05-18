@@ -1,4 +1,4 @@
-(defproject swingrepl "1.4.0-SNAPSHOT"
+(defproject swingrepl "1.4.1-SNAPSHOT"
   :source-path "src/clj"
   :java-source-path "src/jvm"
   :java-fork "true"

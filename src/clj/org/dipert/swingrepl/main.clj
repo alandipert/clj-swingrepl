@@ -12,10 +12,6 @@
      clj-version
      (apply str (interpose \. (map *clojure-version* [:major :minor :incremental]))))
 
-(defn- set-safe-printing! []
-  (set! *print-level* 15)
-  (set! *print-length* 103))
-
 (def ^{:doc "Default REPL options"
        :private false}
      default-opts
@@ -24,7 +20,7 @@
       :font (Font. "Monospaced" Font/PLAIN 14)
       :title (str "Clojure " clj-version " REPL")
       :prompt #(print "user=> ")
-      :init set-safe-printing!
+      :init #()
       :eval eval
       :on-close JFrame/DISPOSE_ON_CLOSE})
 
