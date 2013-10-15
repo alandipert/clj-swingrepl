@@ -41,34 +41,47 @@
 (defn- window-closing-dispatcher [window]
   #(.dispatchEvent window (WindowEvent. window WindowEvent/WINDOW_CLOSING)))
 
+
+(defn make-repl-jconsole
+  "Returns a JConsole component"
+  [options]
+  (let [{:keys [font prompt init eval eof]} options
+        console (bsh.util.JConsole. font)
+        thread (make-repl-thread console :prompt prompt :init init :eval eval)
+        stopper (clojure.repl/thread-stopper thread)]
+    (doto console
+      (.setInterruptFunction (fn [reason] (stopper reason)))
+      (.setEOFFunction eof))
+    (.start thread)
+    console))
+
+
 (defn make-repl-jframe
   "Displays a JFrame with JConsole and attached REPL."
   ([] (make-repl-jframe {}))
   ([optmap]
-    (let [options (merge default-opts optmap)
-          {:keys [title width height font on-close prompt init eval]} options
-          jframe (doto (JFrame. title)
-        (.setSize width height)
-        (.setDefaultCloseOperation on-close)
-        (.setLocationRelativeTo nil))]
-      (let [console (bsh.util.JConsole. font)]
-        (doto (.getContentPane jframe)
-          (.setLayout (java.awt.BorderLayout.))
-          (.add console))
-        (doto jframe
-          (.pack)
-          (.setSize width height))
-        (.requestFocus console)
-        (let [thread  (make-repl-thread console :prompt prompt :init init :eval eval)
-              stopper (clojure.repl/thread-stopper thread)]
-          (doto console
-            (.setInterruptFunction (fn [reason] (stopper reason)))
-            (.setEOFFunction (window-closing-dispatcher jframe)))
-          (.start thread)
-          (.setVisible jframe true))))))
+     (let [options (merge default-opts optmap)
+           {:keys [title width height font on-close prompt init eval]} options
+           jframe (doto (JFrame. title)
+                   (.setSize width height)
+                   (.setDefaultCloseOperation on-close)
+                   (.setLocationRelativeTo nil))
+           eof (window-closing-dispatcher jframe)]
+       (let [console (make-repl-jconsole
+                      (merge
+                       {:eof eof}
+                       options))]
+         (doto (.getContentPane jframe)
+           (.setLayout (java.awt.BorderLayout.))
+           (.add console))
+         (doto jframe
+           (.pack)
+           (.setSize width height))
+         (.requestFocus console)
+         (.setVisible jframe true)))))
 
-; local-bindings and eval-with-locals are from http://gist.github.com/252421
-; Inspired by George Jahad's version: http://georgejahad.com/clojure/debug-repl.html
+;; local-bindings and eval-with-locals are from http://gist.github.com/252421
+;; Inspired by George Jahad's version: http://georgejahad.com/clojure/debug-repl.html
 (defmacro local-bindings
   "Produces a map of the names of local bindings to their values."
   []
