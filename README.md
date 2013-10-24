@@ -3,6 +3,9 @@ clj-swingrepl
 
 Swing Clojure REPL that uses BeanShell's JConsole component.
 
+This is a fork of https://github.com/alandipert/clj-swingrepl, which is
+hopefully a temporary measure.
+
 Build
 -----
 
