@@ -19,7 +19,7 @@
       :height 400
       :font (Font. "Monospaced" Font/PLAIN 14)
       :title (str "Clojure " clj-version " REPL")
-      :prompt #(print "user=> ")
+      :prompt #(printf "%s=> " (ns-name *ns*))
       :init #()
       :eval eval
       :on-close JFrame/DISPOSE_ON_CLOSE})
